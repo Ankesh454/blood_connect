@@ -17,6 +17,7 @@ export default function Footer() {
         <Link to="/donation">Donation</Link>
         <Link to="/blood-camps">Blood Camps</Link>
         <Link to="/create-request">Request Blood</Link>
+        <Link to="/admin/login" style={{ color: "#ef4444", fontWeight: 600 }}>Staff Portal</Link>
       </div>
 
       <p className="copyright">© {new Date().getFullYear()} BloodConnect</p>
