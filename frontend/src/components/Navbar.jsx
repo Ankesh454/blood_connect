@@ -8,6 +8,13 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dashboardPath = '/dashboard';
+  const roleLabels = { hospital: 'Hospital', donor: 'Donor', recipient: 'Recipient' };
+  const roleStyles = {
+    hospital: 'bg-violet-50 text-violet-700',
+    donor: 'bg-rose-50 text-rose-700',
+    recipient: 'bg-blue-50 text-blue-700',
+  };
+  const roleLabel = roleLabels[user?.role] || 'Account';
 
   const closeMenu = () => setIsOpen(false);
   const handleLogout = () => {
@@ -46,7 +53,12 @@ const Navbar = () => {
             </Link>
             {user ? (
               <>
-                <span className="max-w-40 truncate border-l border-slate-200 pl-4 text-sm font-medium text-slate-600">{user.name}</span>
+                <div className="flex max-w-56 items-center gap-2 border-l border-slate-200 pl-4">
+                  <span className="truncate text-sm font-medium text-slate-700">{user.name}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${roleStyles[user.role] || 'bg-slate-100 text-slate-700'}`}>
+                    {roleLabel}
+                  </span>
+                </div>
                 <button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700">
                   <LogOut className="h-4 w-4" /> Logout
                 </button>
@@ -87,7 +99,18 @@ const Navbar = () => {
               </Link>
             ))}
             {user ? (
-              <button onClick={handleLogout} className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm font-bold text-rose-600"><LogOut className="h-4 w-4" /> Logout</button>
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <div className="mb-2 flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-slate-800">{user.name}</p>
+                    <p className="text-xs text-slate-500">Signed in as</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${roleStyles[user.role] || 'bg-slate-100 text-slate-700'}`}>
+                    {roleLabel}
+                  </span>
+                </div>
+                <button onClick={handleLogout} className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-50 px-3 py-2.5 text-sm font-bold text-rose-600"><LogOut className="h-4 w-4" /> Logout</button>
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
                 <Link to="/login" onClick={closeMenu} className="rounded-lg border border-slate-200 px-3 py-2.5 text-center text-sm font-bold text-slate-700">Login</Link>

@@ -30,7 +30,7 @@ const Register = () => {
     e.preventDefault();
     try {
       await register(formData);
-      navigate('/');
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       const message = err.response?.data?.message;
       setError(message || (err.request

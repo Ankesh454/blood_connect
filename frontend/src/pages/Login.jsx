@@ -1,24 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import API from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post('/auth/login', { email, password });
-      
-      // Token aur user info save karo
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('userInfo', JSON.stringify(res.data));
-      
-      // Pop-up hata diya hai, ab sidhe redirect hoga
-      navigate('/');
-      window.location.reload(); 
+      await login(email, password);
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Login request failed:', err.response?.data || err.message);
       if (!err.response) {
