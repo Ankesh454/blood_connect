@@ -4,13 +4,13 @@
   "private": true,
   "workspaces": [
     "backend",
-    "frontend"
+    "life_connect"
   ],
   "scripts": {
     "start": "npm --workspace backend start",
-    "dev": "npm --prefix frontend run dev",
+    "dev": "npm --prefix life_connect run dev",
     "dev:backend": "npm --prefix backend run dev",
-    "build": "npm --prefix frontend run build",
-    "lint": "npm --prefix frontend run lint"
+    "build": "npm --prefix life_connect run build",
+    "lint": "npm --prefix life_connect run lint"
   }
 }
