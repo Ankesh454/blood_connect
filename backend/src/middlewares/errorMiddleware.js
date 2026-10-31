@@ -1,37 +1,13 @@
-// Route not found (404) error handler
-const notFound = (req, res, next) => {
-  const error = new Error(`Not Found - ${req.originalUrl}`);
-  res.status(404);
-  next(error);
-};
+const notFound = (req, res, next) => next(Object.assign(new Error('Resource not found'), { statusCode: 404 }));
 
-// Global error handler
 const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  let message = err.message;
-
-  // Mongoose bad ObjectId error
-  if (err.name === 'CastError' && err.kind === 'ObjectId') {
-    statusCode = 404;
-    message = 'Resource not found';
-  }
-
-  // Mongoose duplicate key error
-  if (err.code === 11000) {
-    statusCode = 400;
-    message = 'Duplicate field value entered';
-  }
-
-  // Mongoose validation error
-  if (err.name === 'ValidationError') {
-    statusCode = 400;
-    message = Object.values(err.errors).map((val) => val.message).join(', ');
-  }
-
-  res.status(statusCode).json({
-    message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
-  });
+  let statusCode = err.statusCode || (res.statusCode !== 200 ? res.statusCode : 500);
+  let message = err.message || 'Internal server error';
+  if (err.name === 'CastError') { statusCode = 400; message = 'Invalid resource identifier'; }
+  if (err.code === 11000) { statusCode = 409; message = 'A record with this value already exists'; }
+  if (err.name === 'ValidationError') { statusCode = 400; message = Object.values(err.errors).map((item) => item.message).join(', '); }
+  if (err.type === 'entity.too.large') { statusCode = 413; message = 'Request body is too large'; }
+  res.status(statusCode).json({ message });
 };
 
 module.exports = { notFound, errorHandler };

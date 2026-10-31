@@ -5,9 +5,8 @@ import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const roleCopy = {
-  donor: { title: 'Donor dashboard', subtitle: 'Your blood can make a life saving difference. Track every response in one place.' },
+  user: { title: 'User dashboard', subtitle: 'Request blood when you need help, respond as a donor when you can, and organize community camps.' },
   hospital: { title: 'Hospital dashboard', subtitle: 'Manage emergency broadcasts and coordinate every donor who responds.' },
-  recipient: { title: 'Recipient dashboard', subtitle: 'Follow active blood requests and get help from your community.' },
 };
 
 const statusStyle = {
@@ -35,7 +34,7 @@ function StatCard({ icon: Icon, label, value, tone = 'rose' }) {
 
 export default function RoleDashboard() {
   const { user } = useAuth();
-  const role = user?.role || 'recipient';
+  const role = user?.role || 'user';
   const [commitments, setCommitments] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -47,7 +46,7 @@ export default function RoleDashboard() {
     if (showLoading) setLoading(true);
     setError('');
     const results = await Promise.allSettled([
-      role === 'recipient' ? Promise.resolve({ data: [] }) : API.get('/commitments'),
+      API.get('/commitments'),
       API.get('/sos'),
       API.get('/requests'),
     ]);
@@ -83,8 +82,8 @@ export default function RoleDashboard() {
     }
   };
 
-  const copy = roleCopy[role] || roleCopy.recipient;
-  const headingBadge = role === 'hospital' ? 'Hospital account · All blood groups' : role === 'donor' ? `Registered donor · ${user?.bloodGroup || 'Blood group not set'}` : 'Recipient account';
+  const copy = roleCopy[role] || roleCopy.user;
+  const headingBadge = role === 'hospital' ? 'Approved hospital account' : `User account · Blood group ${user?.bloodGroup || 'not set'}`;
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
@@ -99,12 +98,18 @@ export default function RoleDashboard() {
             </div>
             <div className="flex flex-wrap gap-3">
               {role === 'hospital' && <Link to="/emergency-sos" className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold shadow-lg shadow-rose-950/30 transition hover:bg-rose-500"><Plus className="h-4 w-4" /> New SOS</Link>}
-              {role === 'donor' && <Link to="/emergency-sos" className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold shadow-lg shadow-rose-950/30 transition hover:bg-rose-500"><HeartHandshake className="h-4 w-4" /> Find an SOS</Link>}
-              {role === 'recipient' && <Link to="/requests" className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold shadow-lg shadow-rose-950/30 transition hover:bg-rose-500"><Plus className="h-4 w-4" /> Request blood</Link>}
+              {role === 'user' && <><Link to="/requests" className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold shadow-lg shadow-rose-950/30 transition hover:bg-rose-500"><Plus className="h-4 w-4" /> Request blood</Link><Link to="/requests" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold transition hover:bg-white/15"><HeartHandshake className="h-4 w-4" /> Respond as donor</Link></>}
               <Link to={role === 'hospital' ? '/analytics' : '/requests'} className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold transition hover:bg-white/15">{role === 'hospital' ? 'View analytics' : 'Browse requests'} <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </div>
         </section>
+
+        {user?.requestedRole === 'hospital' && user.approvalStatus === 'pending' && (
+          <section role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
+            <h2 className="font-extrabold">Hospital account pending approval</h2>
+            <p className="mt-1 text-sm">You can use the standard User features while an administrator reviews your hospital application. Hospital inventory, SOS, and issuance tools will unlock after approval.</p>
+          </section>
+        )}
 
         {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{error}</div>}
 
@@ -118,8 +123,8 @@ export default function RoleDashboard() {
                 <StatCard icon={Activity} label="Total responses" value={commitments.length} tone="blue" />
                 <StatCard icon={HeartHandshake} label="Active SOS broadcasts" value={hospitalAlerts.filter((item) => item.status === 'Active').length} tone="amber" />
                 <StatCard icon={CheckCircle2} label="Completed donations" value={commitments.filter((item) => item.status === 'Donated').length} tone="emerald" />
-              </> : role === 'donor' ? <>
-                <StatCard icon={HeartHandshake} label="Your responses" value={commitments.length} tone="rose" />
+              </> : role === 'user' ? <>
+                <StatCard icon={HeartHandshake} label="Your donation responses" value={commitments.length} tone="rose" />
                 <StatCard icon={Clock3} label="In progress" value={activeResponders.length} tone="amber" />
                 <StatCard icon={CheckCircle2} label="Donations completed" value={commitments.filter((item) => item.status === 'Donated').length} tone="emerald" />
                 <StatCard icon={Activity} label="Open blood requests" value={activeRequests.length} tone="blue" />
@@ -127,7 +132,7 @@ export default function RoleDashboard() {
                 <StatCard icon={Activity} label="Open blood requests" value={activeRequests.length} tone="rose" />
                 <StatCard icon={HeartHandshake} label="Active emergency alerts" value={alerts.filter((item) => item.status === 'Active').length} tone="amber" />
                 <StatCard icon={MapPin} label="Your city" value={user?.city || 'Not set'} tone="blue" />
-                <StatCard icon={CalendarDays} label="Account type" value="Recipient" tone="emerald" />
+                <StatCard icon={CalendarDays} label="Account type" value="User" tone="emerald" />
               </>}
             </section>
 
@@ -160,9 +165,9 @@ export default function RoleDashboard() {
                   </div>
                 )}
               </section>
-            ) : role === 'donor' ? (
+            ) : role === 'user' ? (
               <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-100 px-5 py-5 sm:px-6"><h2 className="text-lg font-extrabold text-slate-900">Your donation responses</h2><p className="mt-1 text-sm text-slate-500">Track the requests you have accepted and update your arrival status.</p></div>
+                <div className="border-b border-slate-100 px-5 py-5 sm:px-6"><h2 className="text-lg font-extrabold text-slate-900">Your donation responses</h2><p className="mt-1 text-sm text-slate-500">Track the requests you have accepted and update your arrival status. You can also create requests and organize camps from this same account.</p></div>
                 {commitments.length === 0 ? <div className="px-6 py-14 text-center"><HeartHandshake className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-semibold text-slate-700">No responses yet</p><Link to="/emergency-sos" className="mt-3 inline-flex font-bold text-rose-600">See matching SOS alerts <ArrowRight className="ml-1 h-4 w-4" /></Link></div> : <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6">{commitments.map((item) => <article key={item._id} className="rounded-2xl border border-slate-200 p-5"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wide text-slate-400">{item.referenceType === 'SOS' ? 'Emergency SOS' : 'Blood request'}</p><h3 className="mt-1 font-bold text-slate-900">{item.hospitalName}</h3></div><span className="rounded-lg bg-rose-50 px-2.5 py-1 text-sm font-black text-rose-700">{item.bloodGroup}</span></div><p className="mt-3 text-sm text-slate-600">{item.referenceLabel}</p><span className={`mt-4 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset ${statusStyle[item.status] || statusStyle.Accepted}`}>{item.status}</span><div className="mt-4 flex flex-wrap gap-2">{item.status === 'Accepted' && <button disabled={updatingId === item._id} onClick={() => updateStatus(item._id, 'On the Way')} className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white hover:bg-amber-600">I am on the way</button>}{!['Donated', 'Cancelled'].includes(item.status) && <button disabled={updatingId === item._id} onClick={() => updateStatus(item._id, 'Cancelled')} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">Cancel response</button>}</div></article>)}</div>}
               </section>
             ) : (

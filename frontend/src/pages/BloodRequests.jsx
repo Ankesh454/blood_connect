@@ -29,7 +29,7 @@ const BloodRequests = () => {
 
   useEffect(() => {
     fetchRequests();
-    if (user?.role === 'donor') {
+    if (user?.role === 'user') {
       API.get('/commitments')
         .then(({ data }) => setAcceptedRequestIds(data.filter((item) => item.referenceType === 'General').map((item) => String(item.referenceId))))
         .catch((err) => console.error('Error fetching donor responses:', err));
@@ -45,7 +45,7 @@ const BloodRequests = () => {
       if (err.response?.status === 409) {
         setAcceptedRequestIds((current) => [...current, String(requestId)]);
       } else {
-        alert(err.response?.data?.message || 'Could not accept this request. Please sign in as a donor.');
+        alert(err.response?.data?.message || 'Sign in with a User account to confirm donor availability.');
       }
     } finally {
       setAcceptingId('');
@@ -141,7 +141,7 @@ const BloodRequests = () => {
                     {req.urgencyLevel}
                   </span>
                 </div>
-                {user?.role === 'donor' && (
+                {user?.role === 'user' && (
                   <button
                     type="button"
                     disabled={acceptingId === req._id || acceptedRequestIds.includes(String(req._id))}

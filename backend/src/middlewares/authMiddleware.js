@@ -2,55 +2,35 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      token = req.headers.authorization.split(' ')[1].trim();
-      const secret = process.env.JWT_SECRET || 'blood_connect_super_secret_key_2026';
-      
-      const decoded = jwt.verify(token, secret);
-
-      // Admin sessions are signed only by the environment-backed admin login.
-      if (decoded.role === 'admin' && decoded.username) {
-        req.admin = true;
-        req.user = { role: 'admin', username: decoded.username };
-        return next();
-      }
-
-      req.user = await User.findById(decoded.id).select('-password');
-
-      if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
-      }
-
-      return next(); // <--- Make sure yeh next() ho, bina brackets ke mat likhna!
-    } catch (error) {
-      console.error('JWT Verification Error:', error.message);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+  const header = req.headers.authorization || '';
+  const [scheme, token] = header.split(' ');
+  if (scheme !== 'Bearer' || !token) return res.status(401).json({ message: 'Authentication required' });
+  if (!process.env.JWT_SECRET) return res.status(503).json({ message: 'Authentication is not configured' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role === 'admin' && typeof decoded.username === 'string') {
+      req.admin = true;
+      req.user = { role: 'admin', username: decoded.username };
+      return next();
     }
-  } else {
-    return res.status(401).json({ message: 'Not authorized, no token provided' });
+    if (!decoded.id) return res.status(401).json({ message: 'Invalid authentication token' });
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(401).json({ message: 'Invalid authentication token' });
+    req.user = user;
+    return next();
+  } catch (_error) {
+    return res.status(401).json({ message: 'Invalid or expired authentication token' });
   }
 };
 
-const requireAdmin = (req, res, next) => {
-  if (!req.admin) {
-    return res.status(403).json({ message: 'Admin access required' });
-  }
+const requireAdmin = (req, res, next) => req.admin ? next() : res.status(403).json({ message: 'Admin access required' });
+const requireRole = (...roles) => (req, res, next) => {
+  if (req.admin && roles.includes('admin')) return next();
+  if (!req.user || !roles.includes(req.user.role)) return res.status(403).json({ message: 'You are not allowed to perform this action' });
+  if (req.user.role === 'hospital' && req.user.approvalStatus !== 'approved') return res.status(403).json({ message: 'Hospital account approval is required' });
   return next();
 };
+const preventAdminAction = (req, res, next) => req.admin || req.user?.role === 'admin'
+  ? res.status(403).json({ message: 'Admin account is restricted from this action.' }) : next();
 
-const preventAdminAction = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    return res.status(403).json({
-      message: 'Admin account is restricted from placing emergency blood requests.',
-    });
-  }
-  return next();
-};
-
-module.exports = { protect, requireAdmin, preventAdminAction };
+module.exports = { protect, requireAdmin, requireRole, preventAdminAction };

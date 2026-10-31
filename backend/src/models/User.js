@@ -2,28 +2,27 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['donor', 'recipient', 'hospital', 'admin'], default: 'donor' },
-  bloodGroup: { type: String, enum: ['All', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] },
-  city: { type: String },
-  phone: { type: String }
-}, { timestamps: true });
+  name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true, maxlength: 254 },
+  password: { type: String, required: true, minlength: 8, select: false },
+  role: { type: String, enum: ['user', 'hospital', 'admin'], default: 'user' },
+  requestedRole: { type: String, enum: ['hospital'], default: undefined },
+  approvalStatus: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+  bloodGroup: { type: String, enum: ['All', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'], default: undefined },
+  city: { type: String, trim: true, maxlength: 120, default: '' },
+  phone: { type: String, trim: true, maxlength: 30, default: '' },
+}, { timestamps: true, toJSON: { transform(_doc, ret) { delete ret.password; delete ret.__v; return ret; } } });
 
-// Hash password before saving (Fixed next() issue)
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) {
-    return;
-  }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+userSchema.pre('validate', function setLegacyHospitalApproval() {
+  // Existing hospital accounts from before approval workflow remain usable.
+  if (this.role === 'hospital' && this.approvalStatus === 'none') this.approvalStatus = 'approved';
 });
 
-// Match user entered password to hashed password in database
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+userSchema.pre('save', async function hashPassword() {
+  if (this.isModified('password')) this.password = await bcrypt.hash(this.password, 12);
+});
+userSchema.methods.matchPassword = function matchPassword(enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

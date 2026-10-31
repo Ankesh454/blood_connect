@@ -1,0 +1,10 @@
+const express = require('express');
+const { listHospitals, getHospital, createHospital, updateHospital, deleteHospital } = require('../controllers/hospitalController');
+const { protect, requireAdmin } = require('../middlewares/authMiddleware');
+const router = express.Router();
+router.get('/', listHospitals);
+router.get('/:id', getHospital);
+router.post('/', protect, requireAdmin, createHospital);
+router.patch('/:id', protect, requireAdmin, updateHospital);
+router.delete('/:id', protect, requireAdmin, deleteHospital);
+module.exports = router;

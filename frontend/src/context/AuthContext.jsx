@@ -9,10 +9,34 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
+    let active = true;
     if (userInfo) {
-      setUser(JSON.parse(userInfo));
+      try {
+        const saved = JSON.parse(userInfo);
+        if (saved?.token && saved?._id) {
+          setUser(saved);
+          API.get('/auth/me').then(({ data }) => {
+            if (!active) return;
+            const refreshed = { ...data, token: saved.token };
+            setUser(refreshed);
+            localStorage.setItem('userInfo', JSON.stringify(refreshed));
+          }).catch((error) => {
+            if (error.response?.status === 401) {
+              if (active) setUser(null);
+              localStorage.removeItem('userInfo');
+              localStorage.removeItem('token');
+            }
+          }).finally(() => { if (active) setLoading(false); });
+          return () => { active = false; };
+        }
+        else localStorage.removeItem('userInfo');
+      } catch {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('token');
+      }
     }
     setLoading(false);
+    return () => { active = false; };
   }, []);
 
   const login = async (email, password) => {

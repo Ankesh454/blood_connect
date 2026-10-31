@@ -14,8 +14,13 @@ const donorCommitmentSchema = new mongoose.Schema({
     enum: ['Accepted', 'On the Way', 'Donated', 'Cancelled'], 
     default: 'Accepted' 
   },
-  referenceType: { type: String, enum: ['SOS', 'Camp', 'General'], default: 'SOS' }
+  referenceType: { type: String, enum: ['SOS', 'Camp', 'General'], default: 'SOS' },
+  onTheWayAt: { type: Date, default: null },
+  donatedAt: { type: Date, default: null },
+  cancelledAt: { type: Date, default: null },
 }, { timestamps: true });
+
+donorCommitmentSchema.index({ donor: 1, referenceType: 1, referenceId: 1 }, { unique: true, partialFilterExpression: { referenceId: { $type: 'objectId' } } });
 
 const DonorCommitment = mongoose.model('DonorCommitment', donorCommitmentSchema);
 module.exports = DonorCommitment;

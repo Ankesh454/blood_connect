@@ -51,7 +51,7 @@ const EmergencySOS = () => {
     }
   }, []);
 
-  const visibleAlerts = userRole === 'donor'
+  const visibleAlerts = userRole === 'user'
     ? alerts.filter((alert) => alert.status === 'Active' && alert.bloodGroup === donorBloodGroup)
     : alerts;
 
@@ -109,7 +109,7 @@ const EmergencySOS = () => {
     }
 
     if (!token) {
-      alert('Please log in as a donor to respond to this SOS alert.');
+      alert('Please log in with a User account to respond to this SOS alert.');
       return;
     }
 
@@ -157,7 +157,7 @@ const EmergencySOS = () => {
           <div className="text-center py-20 text-gray-500 font-medium animate-pulse">Loading emergency alerts...</div>
         ) : visibleAlerts.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
-            <p className="text-gray-600 font-medium">{userRole === 'donor' ? `No active SOS alerts for ${donorBloodGroup || 'your blood group'} right now.` : 'No active emergency SOS requests right now. All clear!'}</p>
+            <p className="text-gray-600 font-medium">{userRole === 'user' ? `No active SOS alerts for ${donorBloodGroup || 'your blood group'} right now.` : 'No active emergency SOS requests right now. All clear!'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -201,7 +201,7 @@ const EmergencySOS = () => {
                     )}
 
                     {/* Donor Action Button */}
-                    {userRole === 'donor' && !isResolved && (
+                    {userRole === 'user' && !isResolved && (
                       <button
                         onClick={() => handleDonorCommit(item)}
                         className="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"

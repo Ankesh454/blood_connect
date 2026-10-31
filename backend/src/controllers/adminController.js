@@ -7,6 +7,7 @@ const Camp = require('../models/Camp');
 const SOSAlert = require('../models/SOSAlert');
 const DonorCommitment = require('../models/DonorCommitment');
 const PatientIssuance = require('../models/PatientIssuance');
+const Hospital = require('../models/Hospital');
 
 const models = {
   users: User,
@@ -16,15 +17,17 @@ const models = {
   sos: SOSAlert,
   commitments: DonorCommitment,
   issuances: PatientIssuance,
+  hospitals: Hospital,
 };
 
 const editableFields = {
-  users: ['name', 'email', 'phone', 'city', 'bloodGroup', 'role'],
+  users: ['name', 'email', 'phone', 'city', 'bloodGroup'],
   inventory: ['units', 'bloodGroup', 'hospitalName', 'city', 'contactPhone', 'batchNumber', 'expiryDate'],
   requests: ['status', 'urgencyLevel'],
   camps: ['title', 'venue', 'city', 'date', 'startTime', 'endTime', 'contactPhone', 'description'],
   sos: ['status'],
   commitments: ['status'],
+  hospitals: ['name', 'address', 'city', 'phone', 'email', 'verified'],
 };
 
 const digest = (value) => crypto.createHash('sha256').update(String(value)).digest();
@@ -55,7 +58,7 @@ const adminLogin = (req, res) => {
 
 const getDashboard = async (req, res) => {
   try {
-    const [users, inventory, requests, camps, sos, commitments, issuances] = await Promise.all([
+    const [users, inventory, requests, camps, sos, commitments, issuances, hospitals] = await Promise.all([
       User.find({}).select('-password').sort({ createdAt: -1 }).limit(200).lean(),
       Inventory.find({}).sort({ createdAt: -1 }).limit(200).lean(),
       BloodRequest.find({}).populate('user', 'name email').sort({ createdAt: -1 }).limit(200).lean(),
@@ -63,10 +66,11 @@ const getDashboard = async (req, res) => {
       SOSAlert.find({}).sort({ createdAt: -1 }).limit(200).lean(),
       DonorCommitment.find({}).sort({ createdAt: -1 }).limit(200).lean(),
       PatientIssuance.find({}).sort({ createdAt: -1 }).limit(200).lean(),
+      Hospital.find({}).sort({ name: 1 }).limit(200).lean(),
     ]);
     const [userCount, hospitalCount, stockUnits, pendingRequests, activeAlerts, campCount, commitmentCount] = await Promise.all([
       User.countDocuments(),
-      User.countDocuments({ role: 'hospital' }),
+      Hospital.countDocuments(),
       Inventory.aggregate([{ $group: { _id: null, units: { $sum: '$units' } } }]),
       BloodRequest.countDocuments({ status: 'Pending' }),
       SOSAlert.countDocuments({ status: 'Active' }),
@@ -84,7 +88,7 @@ const getDashboard = async (req, res) => {
         camps: campCount,
         commitments: commitmentCount,
       },
-      records: { users, inventory, requests, camps, sos, commitments, issuances },
+      records: { users, inventory, requests, camps, sos, commitments, issuances, hospitals },
     });
   } catch (error) {
     console.error('ADMIN DASHBOARD ERROR:', error.message);
@@ -119,10 +123,30 @@ const updateRecord = async (req, res) => {
   }
 };
 
+const approveHospitalApplication = async (req, res) => {
+  const user = await User.findOneAndUpdate(
+    { _id: req.params.id, requestedRole: 'hospital', approvalStatus: 'pending' },
+    { $set: { role: 'hospital', approvalStatus: 'approved' } },
+    { new: true, runValidators: true },
+  ).select('-password');
+  if (!user) return res.status(404).json({ message: 'Pending hospital application not found' });
+  return res.json(user);
+};
+
+const rejectHospitalApplication = async (req, res) => {
+  const user = await User.findOneAndUpdate(
+    { _id: req.params.id, requestedRole: 'hospital', approvalStatus: 'pending' },
+    { $set: { role: 'user', approvalStatus: 'rejected' } },
+    { new: true, runValidators: true },
+  ).select('-password');
+  if (!user) return res.status(404).json({ message: 'Pending hospital application not found' });
+  return res.json(user);
+};
+
 const deleteRecord = async (req, res) => {
   try {
     const { collection, id } = req.params;
-    if (!['users', 'inventory', 'camps'].includes(collection)) {
+    if (!['users', 'inventory', 'camps', 'hospitals'].includes(collection)) {
       return res.status(400).json({ message: 'This record type cannot be deleted' });
     }
     const record = await models[collection].findByIdAndDelete(id);
@@ -133,4 +157,4 @@ const deleteRecord = async (req, res) => {
   }
 };
 
-module.exports = { adminLogin, getDashboard, updateRecord, deleteRecord };
+module.exports = { adminLogin, getDashboard, updateRecord, deleteRecord, approveHospitalApplication, rejectHospitalApplication };

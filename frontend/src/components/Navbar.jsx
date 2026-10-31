@@ -8,13 +8,14 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dashboardPath = '/dashboard';
-  const roleLabels = { hospital: 'Hospital', donor: 'Donor', recipient: 'Recipient' };
+  const roleLabels = { hospital: 'Hospital', user: 'User' };
   const roleStyles = {
     hospital: 'bg-violet-50 text-violet-700',
-    donor: 'bg-rose-50 text-rose-700',
-    recipient: 'bg-blue-50 text-blue-700',
+    user: 'bg-rose-50 text-rose-700',
   };
-  const roleLabel = roleLabels[user?.role] || 'Account';
+  const roleLabel = user?.requestedRole === 'hospital' && user.approvalStatus === 'pending'
+    ? 'Hospital pending'
+    : roleLabels[user?.role] || 'Account';
 
   const closeMenu = () => setIsOpen(false);
   const handleLogout = () => {
@@ -41,7 +42,8 @@ const Navbar = () => {
 
           <div className="hidden items-center gap-5 xl:flex 2xl:gap-7">
             <NavLink to="/" className={desktopLinkClass}>Home</NavLink>
-            <NavLink to="/inventory" className={desktopLinkClass}>Hospitals</NavLink>
+            <NavLink to="/hospitals" className={desktopLinkClass}>Hospitals</NavLink>
+            {user && <NavLink to="/notifications" className={desktopLinkClass}>Notifications</NavLink>}
             <NavLink to="/donors" className={desktopLinkClass}>Donation</NavLink>
             <NavLink to="/camps" className={desktopLinkClass}>Blood Camps</NavLink>
             <NavLink to={dashboardPath} className={desktopLinkClass}>Dashboard</NavLink>
@@ -66,7 +68,7 @@ const Navbar = () => {
             ) : (
               <>
                 <Link to="/login" className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:text-rose-600">Login</Link>
-                <Link to="/register" className="whitespace-nowrap rounded-xl bg-linear-to-r from-rose-600 to-red-700 px-5 py-3 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:-translate-y-0.5 hover:from-rose-700 hover:to-red-800">Join as Donor</Link>
+                <Link to="/register" className="whitespace-nowrap rounded-xl bg-linear-to-r from-rose-600 to-red-700 px-5 py-3 text-sm font-bold text-white shadow-md shadow-rose-600/20 transition hover:-translate-y-0.5 hover:from-rose-700 hover:to-red-800">Create Account</Link>
               </>
             )}
           </div>
@@ -86,12 +88,13 @@ const Navbar = () => {
           <div className="space-y-1 border-t border-slate-100 py-3 xl:hidden">
             {[
               ['Home', '/'],
-              ['Hospitals', '/inventory'],
+              ['Hospitals', '/hospitals'],
               ['Donation', '/donors'],
               ['Blood Camps', '/camps'],
               ['Dashboard', dashboardPath],
+              ...(user ? [['Notifications', '/notifications']] : []),
               ['Emergency Requests', '/requests'],
-              ...(user?.role === 'hospital' ? [['Donor Tracking', '/donor-tracking'], ['Issuance Log', '/issuance-log'], ['Analytics', '/analytics']] : user?.role === 'donor' ? [['My Responses', '/donor-tracking']] : []),
+              ...(user?.role === 'hospital' ? [['Donor Tracking', '/donor-tracking'], ['Issuance Log', '/issuance-log'], ['Analytics', '/analytics']] : user?.role === 'user' ? [['My Donation Responses', '/donor-tracking']] : []),
               ['Emergency SOS', '/emergency-sos'],
             ].map(([label, path]) => (
               <Link key={`${label}-${path}`} to={path} onClick={closeMenu} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-600">
@@ -114,7 +117,7 @@ const Navbar = () => {
             ) : (
               <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
                 <Link to="/login" onClick={closeMenu} className="rounded-lg border border-slate-200 px-3 py-2.5 text-center text-sm font-bold text-slate-700">Login</Link>
-                <Link to="/register" onClick={closeMenu} className="rounded-lg bg-rose-600 px-3 py-2.5 text-center text-sm font-bold text-white">Join as Donor</Link>
+                <Link to="/register" onClick={closeMenu} className="rounded-lg bg-rose-600 px-3 py-2.5 text-center text-sm font-bold text-white">Create Account</Link>
               </div>
             )}
           </div>

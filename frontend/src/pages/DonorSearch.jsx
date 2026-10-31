@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Phone, Droplet, User, ShieldCheck } from 'lucide-react';
+import { MapPin, Phone, Droplet, User, ShieldCheck } from 'lucide-react';
 import API from '../services/api';
 
 export default function DonorSearch() {
@@ -16,8 +16,7 @@ export default function DonorSearch() {
       const res = await API.get('/donors', {
         params: { bloodGroup, city }
       });
-      console.log("Backend response donors:", res.data);
-      setDonors(res.data);
+      setDonors(Array.isArray(res.data) ? res.data : (res.data.items || []));
     } catch (err) {
       console.error("Error fetching donors:", err);
       setErrorMsg("Backend server se data nahi mil pa raha hai. Port or API path check karein.");
@@ -41,10 +40,10 @@ export default function DonorSearch() {
             <Droplet className="w-6 h-6 animate-pulse" />
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Find Available Blood Donors
+            Find Blood Donors
           </h1>
           <p className="mt-2 text-lg text-gray-600 max-w-2xl mx-auto">
-            Search verified blood donors by blood group and city for emergency support instantly.
+            Search registered donors by blood group and city. Availability is confirmed only when a donor responds to a request; matching does not establish medical compatibility or eligibility.
           </p>
         </div>
 
