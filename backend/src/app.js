@@ -20,10 +20,12 @@ const allowedOrigins = new Set([
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://blood-connect-bq2jiebu2-my-project-2606.vercel.app',
+  'https://blood-connect-beryl-ten.vercel.app',
+  'https://blood-connect.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean));
 
-const vercelFrontendOrigin = /^https:\/\/blood-connect(?:-[a-z0-9-]+)?-my-project-2606\.vercel\.app$/i;
+const vercelFrontendOrigin = /^https:\/\/blood-connect(?:-[a-z0-9-]+)?-(?:ten|my-project-2606)\.vercel\.app$/i;
 
 const corsOptions = {
   origin(origin, callback) {
