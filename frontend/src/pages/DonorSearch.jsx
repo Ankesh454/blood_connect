@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Search, MapPin, Phone, Droplet, User, ShieldCheck } from 'lucide-react';
+import API from '../services/api';
 
 export default function DonorSearch() {
   const [donors, setDonors] = useState([]);
@@ -13,8 +13,7 @@ export default function DonorSearch() {
     setLoading(true);
     setErrorMsg('');
     try {
-      // Backend Port 5000 / API endpoint check karein
-      const res = await axios.get(`http://localhost:5001/api/donors`, {
+      const res = await API.get('/donors', {
         params: { bloodGroup, city }
       });
       console.log("Backend response donors:", res.data);
