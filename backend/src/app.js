@@ -22,14 +22,16 @@ const allowedOrigins = new Set([
   'https://blood-connect-bq2jiebu2-my-project-2606.vercel.app',
   'https://blood-connect-beryl-ten.vercel.app',
   'https://blood-connect.vercel.app',
+  'https://life-connect-ten.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean));
 
 const vercelFrontendOrigin = /^https:\/\/blood-connect(?:-[a-z0-9-]+)?-(?:ten|my-project-2606)\.vercel\.app$/i;
+const lifeConnectVercelOrigin = /^https:\/\/life-connect(?:-[a-z0-9-]+)?\.vercel\.app$/i;
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.has(origin) || vercelFrontendOrigin.test(origin)) {
+    if (!origin || allowedOrigins.has(origin) || vercelFrontendOrigin.test(origin) || lifeConnectVercelOrigin.test(origin)) {
       return callback(null, true);
     }
 
