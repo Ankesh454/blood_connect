@@ -121,7 +121,7 @@ const Home = () => {
             <Activity className="h-4 w-4" /> Live Activity Radar
           </span>
           <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Emergency help and donor services</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">Explore the tools available through the BloodConnect network.</p>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">Explore the tools available through the Life Connect network.</p>
         </div>
         <div className="activity-viewport mt-8 overflow-hidden px-4 pb-3 sm:px-6 lg:px-8">
           <div className="activity-track flex w-max gap-4">
@@ -167,7 +167,7 @@ const Home = () => {
         <div className="mx-auto mb-9 max-w-2xl text-center">
           <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-rose-600">One Purpose</span>
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Intuitive tools built for every emergency</h2>
-          <p className="mt-3 text-slate-500">Whether you are seeking blood, organizing a drive, or donating, BloodConnect guides you smoothly.</p>
+          <p className="mt-3 text-slate-500">Whether you are seeking blood, organizing a drive, or donating, Life Connect guides you smoothly.</p>
         </div>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <Link to="/donors" className="group flex min-h-64 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-xl">
@@ -250,7 +250,7 @@ const Home = () => {
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm leading-7 text-slate-600">“When my mother underwent emergency surgery, we needed 3 units of B+ within 45 minutes. BloodConnect matched us with two nearby donors who arrived directly at the hospital.”</p>
+            <p className="text-sm leading-7 text-slate-600">“When my mother underwent emergency surgery, we needed 3 units of B+ within 45 minutes. Life Connect matched us with two nearby donors who arrived directly at the hospital.”</p>
             <div className="mt-6 flex items-center gap-3 border-t border-slate-100 pt-5">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-sm font-extrabold text-rose-600">RD</span>
               <div><p className="font-bold text-slate-900">Rohan Deshmukh</p><p className="text-xs text-slate-500">Recipient Family · Mumbai</p></div>
@@ -264,7 +264,7 @@ const Home = () => {
             </div>
           </article>
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm leading-7 text-slate-600">“Our hospital blood bank inventory coordination improved by 40% since connecting our verified drives. BloodConnect is indispensable in healthcare logistics.”</p>
+            <p className="text-sm leading-7 text-slate-600">“Our hospital blood bank inventory coordination improved by 40% since connecting our verified drives. Life Connect is indispensable in healthcare logistics.”</p>
             <div className="mt-6 flex items-center gap-3 border-t border-slate-100 pt-5">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 text-sm font-extrabold text-indigo-700">DR</span>
               <div><p className="font-bold text-slate-900">Dr. Arvind Rao</p><p className="text-xs text-slate-500">Medical Superintendent · Bangalore</p></div>
@@ -298,7 +298,7 @@ const Home = () => {
             <Link to="/emergency-sos" className="hover:text-rose-600">Emergency SOS</Link>
           </nav>
         </div>
-        <div className="mx-auto mt-6 max-w-7xl border-t border-slate-100 pt-4 text-xs text-slate-400">© 2026 BloodConnect</div>
+        <div className="mx-auto mt-6 max-w-7xl border-t border-slate-100 pt-4 text-xs text-slate-400">© 2026 Life Connect</div>
       </footer>
     </main>
   );

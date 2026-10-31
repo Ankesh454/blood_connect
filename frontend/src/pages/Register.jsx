@@ -34,7 +34,7 @@ const Register = () => {
     } catch (err) {
       const message = err.response?.data?.message;
       setError(message || (err.request
-        ? 'Cannot reach the server. Make sure the BloodConnect backend is running.'
+        ? 'Cannot reach the server. Make sure the Life Connect backend is running.'
         : err.message || 'Registration failed'));
     }
   };
@@ -45,7 +45,7 @@ const Register = () => {
         <div className="text-center mb-6">
           <HeartPulse className="h-12 w-12 text-red-600 mx-auto animate-pulse" />
           <h2 className="text-2xl font-black text-gray-900 mt-2">Create Account</h2>
-          <p className="text-sm text-gray-500">Join BloodConnect as a donor, recipient, or hospital</p>
+          <p className="text-sm text-gray-500">Join Life Connect as a donor, recipient, or hospital</p>
         </div>
 
         {error && (

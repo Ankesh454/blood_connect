@@ -28,7 +28,7 @@ const Navbar = () => {
               <Droplets className="h-6 w-6 text-rose-600" />
             </span>
             <span className="text-xl font-extrabold tracking-tight sm:text-2xl">
-              <span className="text-rose-600">Blood</span><span className="text-slate-900">Connect</span>
+              <span className="text-rose-600">Life</span>{' '}<span className="text-slate-900">Connect</span>
             </span>
           </Link>
 

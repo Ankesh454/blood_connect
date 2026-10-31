@@ -174,19 +174,19 @@ const AdminPortal = () => {
           <div className="hidden flex-col justify-between bg-gradient-to-br from-[#111c31] via-[#111827] to-[#3e1020] p-12 md:flex">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500 text-white"><Droplets /></span>
-              <div><p className="text-lg font-black tracking-tight">BloodConnect</p><p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Operations</p></div>
+              <div><p className="text-lg font-black tracking-tight">Life Connect</p><p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Operations</p></div>
             </div>
             <div>
               <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-300/20 bg-rose-400/10 px-3 py-1.5 text-xs font-bold text-rose-200"><ShieldCheck className="h-4 w-4" /> SECURE ADMIN ACCESS</p>
               <h1 className="max-w-md text-4xl font-black leading-tight">Every donation. Every connection. One command center.</h1>
               <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">Monitor the network, resolve urgent needs, and keep blood moving to the people who need it.</p>
             </div>
-            <p className="text-xs text-slate-500">BloodConnect · Administration portal</p>
+            <p className="text-xs text-slate-500">Life Connect · Administration portal</p>
           </div>
           <form onSubmit={handleLogin} className="flex flex-col justify-center px-7 py-12 text-slate-900 sm:px-12 md:py-16">
             <div className="mb-8 md:hidden">
               <span className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600"><Droplets /></span>
-              <p className="text-sm font-black text-slate-900">BloodConnect <span className="font-medium text-slate-400">/ Admin</span></p>
+              <p className="text-sm font-black text-slate-900">Life Connect <span className="font-medium text-slate-400">/ Admin</span></p>
             </div>
             <div className="mb-8">
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-rose-600">Administrator sign in</p>
@@ -222,7 +222,7 @@ const AdminPortal = () => {
         {mobileMenuOpen && <button aria-label="Close menu" onClick={() => setMobileMenuOpen(false)} className="absolute inset-0 bg-slate-950/50 lg:hidden" />}
         <div className="relative flex h-full w-[280px] flex-col bg-[#0d1526] px-4 py-5 text-white lg:w-full">
           <div className="flex items-center justify-between px-2 pb-8 pt-1">
-            <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-600"><Droplets className="h-5 w-5" /></span><div><p className="font-extrabold tracking-tight">BloodConnect</p><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Admin console</p></div></div>
+            <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-600"><Droplets className="h-5 w-5" /></span><div><p className="font-extrabold tracking-tight">Life Connect</p><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Admin console</p></div></div>
             <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="lg:hidden"><X className="h-5 w-5 text-slate-400" /></button>
           </div>
           <p className="px-3 pb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Workspace</p>
@@ -278,7 +278,7 @@ const AdminPortal = () => {
               {loading && records[section]?.length === 0 ? <div className="p-14 text-center text-sm font-semibold text-slate-400">Loading records…</div> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><TableHead section={section} /><tbody className="divide-y divide-slate-100">{visibleRows.map((row) => <AdminRow key={row._id} row={row} section={section} onUpdate={updateRecord} onDelete={deleteRecord} />)}{visibleRows.length === 0 && <tr><td colSpan="8" className="px-6 py-14 text-center text-sm text-slate-400">{search ? 'No records match your search.' : 'No records in this section yet.'}</td></tr>}</tbody></table></div>}
             </section>
           )}
-          <footer className="flex flex-wrap items-center justify-between gap-2 pb-4 text-[11px] font-medium text-slate-400"><span>BloodConnect Admin Console</span><span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Protected administrator session</span></footer>
+          <footer className="flex flex-wrap items-center justify-between gap-2 pb-4 text-[11px] font-medium text-slate-400"><span>Life Connect Admin Console</span><span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Protected administrator session</span></footer>
         </div>
       </main>
     </div>

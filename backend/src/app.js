@@ -60,7 +60,7 @@ app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
 // Base route
 app.get('/', (req, res) => {
-  res.send('Blood Connect API is running...');
+  res.send('Life Connect API is running...');
 });
 
 // Error Handling Middlewares (Must be registered AFTER all routes)
