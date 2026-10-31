@@ -1,83 +1,57 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import DonorSearch from './pages/DonorSearch';
+import BloodRequests from './pages/BloodRequests';
+import Inventory from './pages/Inventory';
+import EmergencySOS from './pages/EmergencySOS';
+import DonationCamps from './pages/DonationCamps';
+import PatientIssuanceLog from './pages/PatientIssuanceLog';
+import DonorTracking from './pages/DonorTracking';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import AdminPortal from './pages/AdminPortal';
+import RoleDashboard from './pages/RoleDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
-import Home from "./pages/Home";
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Hospitals from "./pages/Hospitals";
-import Donation from "./pages/Donation";
-import CreateRequest from "./pages/CreateRequest";
-import BloodCamps from "./pages/BloodCamps";
-import Notifications from "./pages/Notifications";
-
-// Admin Module
-import { AdminAuthProvider } from "./admin/context/AdminAuthContext";
-import AdminLogin from "./admin/AdminLogin";
-import AdminDashboard from "./admin/AdminDashboard";
-import ProtectedAdminRoute from "./admin/components/ProtectedAdminRoute";
-import "./admin/admin.css";
-
-function AppContent() {
+const AppRoutes = () => {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith("/admin");
+  const isAdminPath = location.pathname === '/admin';
 
   return (
-    <div className={isAdminRoute ? "admin-app-root" : "app-shell"}>
-      {/* Hide general consumer Navbar and Footer when in the Admin portal */}
-      {!isAdminRoute && <Navbar />}
-      
-      <main className={isAdminRoute ? "admin-root-content" : "main-content"}>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {!isAdminPath && <Navbar />}
+      <main className="flex-1">
         <Routes>
-          {/* Public Patient & Donor Routes */}
+          <Route path="/admin" element={<AdminPortal />} />
+          <Route path="/camps" element={<DonationCamps />} />
+          <Route path="/emergency-sos" element={<EmergencySOS />} />
           <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/hospitals" element={<Hospitals />} />
-          <Route path="/donation" element={<Donation />} />
-          <Route path="/create-request" element={<CreateRequest />} />
-          <Route path="/blood-camps" element={<BloodCamps />} />
-          <Route path="/notifications" element={<Notifications />} />
-
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedAdminRoute>
-                <AdminDashboard />
-              </ProtectedAdminRoute>
-            }
-          />
-
-          {/* Fallback 404 */}
-          <Route
-            path="*"
-            element={
-              <section className="empty-state">
-                <h1>404 — Page Not Found</h1>
-                <a href="/" className="btn btn-primary">
-                  Back to Home
-                </a>
-              </section>
-            }
-          />
+          <Route path="/register" element={<Register />} />
+          <Route path="/donors" element={<DonorSearch />} />
+          <Route path="/requests" element={<BloodRequests />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/issuance-log" element={<PatientIssuanceLog />} />
+          <Route path="/donor-tracking" element={<DonorTracking />} />
+          <Route path="/dashboard" element={<ProtectedRoute><RoleDashboard /></ProtectedRoute>} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
         </Routes>
       </main>
-
-      {!isAdminRoute && <Footer />}
     </div>
   );
-}
+};
 
-export default function App() {
+function App() {
   return (
-    <AdminAuthProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </AdminAuthProvider>
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   );
 }
+
+export default App;
