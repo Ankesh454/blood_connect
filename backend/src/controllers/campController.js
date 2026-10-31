@@ -3,17 +3,21 @@ const Camp = require('../models/Camp');
 // Get all donation camps
 const getCamps = async (req, res) => {
   try {
-    const camps = await Camp.find({}).sort({ date: 1 });
+    const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
+    const filter = {};
+    if (req.query.city) filter.city = { $regex: String(req.query.city).slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+    const camps = await Camp.find(filter).sort({ date: 1 }).skip((page - 1) * limit).limit(limit).lean();
     res.json(camps);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Create a new camp (Hospital only)
+// Authenticated Users and approved Hospitals may organize camps.
 const createCamp = async (req, res) => {
   try {
-    const { title, venue, city, date, startTime, endTime, contactPhone, description, hospitalName } = req.body;
+    const { title, venue, city, date, startTime, endTime, contactPhone, description } = req.body;
 
     if (!title || !venue || !city || !date || !startTime || !endTime || !contactPhone) {
       return res.status(400).json({ message: 'Please fill all required camp details' });
@@ -21,7 +25,7 @@ const createCamp = async (req, res) => {
 
     const camp = await Camp.create({
       hospital: req.user._id,
-      hospitalName: hospitalName || req.user.name,
+      hospitalName: req.user.name,
       title,
       venue,
       city,

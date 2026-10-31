@@ -9,7 +9,7 @@ const Register = () => {
     email: '',
     password: '',
     phone: '',
-    role: 'donor',
+    role: 'user',
     bloodGroup: 'A+',
     city: '',
   });
@@ -45,7 +45,7 @@ const Register = () => {
         <div className="text-center mb-6">
           <HeartPulse className="h-12 w-12 text-red-600 mx-auto animate-pulse" />
           <h2 className="text-2xl font-black text-gray-900 mt-2">Create Account</h2>
-          <p className="text-sm text-gray-500">Join Life Connect as a donor, recipient, or hospital</p>
+          <p className="text-sm text-gray-500">As a User, you can request blood, respond as a donor, and organize camps from one account.</p>
         </div>
 
         {error && (
@@ -114,15 +114,14 @@ const Register = () => {
                 onChange={handleChange} 
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-gray-900 focus:ring-2 focus:ring-red-500 focus:outline-none bg-white"
               >
-                <option value="donor">Donor</option>
-                <option value="recipient">Recipient</option>
-                <option value="hospital">Hospital</option>
+                <option value="user">User (request and donate)</option>
+                <option value="hospital">Hospital account (admin approval required)</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Blood Group</label>
               {formData.role === 'hospital' ? (
-                <div className="w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 font-semibold text-rose-700">All blood groups</div>
+                <div className="w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 font-semibold text-rose-700">Hospital account</div>
               ) : (
                 <select
                   name="bloodGroup"

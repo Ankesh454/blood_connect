@@ -1,17 +1,18 @@
 const DonorCommitment = require('../models/DonorCommitment');
 const BloodRequest = require('../models/BloodRequest');
 const SOSAlert = require('../models/SOSAlert');
+const Notification = require('../models/Notification');
 
-// Get commitments for hospital or donor
+// Users can participate as donors and hospitals see only responses linked to them.
 const getCommitments = async (req, res) => {
   try {
     const query = {};
     if (req.user.role === 'hospital') {
       query.hospital = req.user._id;
-    } else if (req.user.role === 'donor') {
+    } else if (req.user.role === 'user') {
       query.donor = req.user._id;
     } else {
-      return res.status(403).json({ message: 'Only donors and hospitals can view donor tracking.' });
+      return res.status(403).json({ message: 'Only users and hospitals can view donor tracking.' });
     }
     const commitments = await DonorCommitment.find(query)
       .populate('donor', 'name email phone city bloodGroup')
@@ -27,9 +28,9 @@ const createCommitment = async (req, res) => {
   try {
     const { requestId, sosId } = req.body;
 
-    // Ensure logged-in user is a donor
-    if (!req.user || req.user.role !== 'donor') {
-      return res.status(403).json({ message: 'Only registered donors can commit to help.' });
+    // Any normal account may respond as a donor; availability is explicit here.
+    if (!req.user || req.user.role !== 'user') {
+      return res.status(403).json({ message: 'Only user accounts can respond as donors.' });
     }
 
     let details;
@@ -47,9 +48,7 @@ const createCommitment = async (req, res) => {
     } else if (sosId) {
       const alert = await SOSAlert.findOne({ _id: sosId, status: 'Active' });
       if (!alert) return res.status(404).json({ message: 'This emergency alert is no longer active.' });
-      if (alert.bloodGroup !== req.user.bloodGroup) {
-        return res.status(403).json({ message: `This SOS is for ${alert.bloodGroup} donors. Your registered group is ${req.user.bloodGroup || 'not set'}.` });
-      }
+      if (alert.bloodGroup !== req.user.bloodGroup) return res.status(403).json({ message: 'Your registered blood group does not match this alert. Matching is not medical compatibility or eligibility.' });
       details = {
         hospital: alert.hospital,
         hospitalName: alert.hospitalName,
@@ -79,6 +78,10 @@ const createCommitment = async (req, res) => {
       ...details,
     });
 
+    if (details.referenceType === 'General') {
+      await Notification.create({ recipient: details.hospital, type: 'donation_update', message: `${req.user.name} responded to your blood request.`, bloodRequest: details.referenceId, donation: commitment._id, dedupeKey: `response:${commitment._id}` });
+    }
+
     res.status(201).json(commitment);
   } catch (error) {
     console.error('COMMITMENT ERROR:', error);
@@ -96,17 +99,24 @@ const updateCommitmentStatus = async (req, res) => {
       return res.status(404).json({ message: 'Commitment record not found' });
     }
 
-    const donorOwnsCommitment = req.user.role === 'donor' && commitment.donor.toString() === req.user._id.toString();
-    const hospitalOwnsCommitment = req.user.role === 'hospital' && commitment.hospital.toString() === req.user._id.toString();
-    const donorStatuses = ['On the Way', 'Cancelled'];
-    const hospitalStatuses = ['Donated', 'Cancelled'];
-    const allowedStatuses = donorOwnsCommitment ? donorStatuses : hospitalOwnsCommitment ? hospitalStatuses : [];
-    if (!allowedStatuses.includes(status)) {
+    const donorOwnsCommitment = req.user.role === 'user' && commitment.donor.toString() === req.user._id.toString();
+    const hospitalOwnsCommitment = req.user.role === 'hospital' && req.user.approvalStatus === 'approved' && commitment.hospital.toString() === req.user._id.toString();
+    const transitions = {
+      Accepted: { donor: ['On the Way', 'Cancelled'], hospital: ['Cancelled'] },
+      'On the Way': { donor: ['Cancelled'], hospital: ['Donated', 'Cancelled'] },
+    };
+    const actor = donorOwnsCommitment ? 'donor' : hospitalOwnsCommitment ? 'hospital' : null;
+    if (!actor || !transitions[commitment.status]?.[actor]?.includes(status)) {
       return res.status(403).json({ message: 'You are not allowed to make this commitment status change.' });
     }
 
     commitment.status = status;
+    if (status === 'On the Way') commitment.onTheWayAt = new Date();
+    if (status === 'Donated') commitment.donatedAt = new Date();
+    if (status === 'Cancelled') commitment.cancelledAt = new Date();
     await commitment.save();
+    const notificationRecipient = donorOwnsCommitment ? commitment.hospital : commitment.donor;
+    await Notification.create({ recipient: notificationRecipient, type: 'donation_update', message: `A donor response is now ${status}.`, bloodRequest: commitment.referenceType === 'General' ? commitment.referenceId : null, donation: commitment._id, dedupeKey: `status:${commitment._id}:${status}` });
     res.json(commitment);
   } catch (error) {
     res.status(500).json({ message: error.message });

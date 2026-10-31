@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 const API = axios.create({
-  // Route production requests through this Vercel deployment's own domain.
-  // Vercel forwards /api to Render, so both Vercel aliases reach the same API.
+  // In production, go through Vercel's same-origin /api proxy. This keeps
+  // browser requests on the Life Connect domain and avoids cross-origin CORS
+  // failures when the frontend domain changes.
   baseURL: import.meta.env.DEV
     ? (import.meta.env.VITE_API_URL || 'http://localhost:5001/api')
     : '/api',

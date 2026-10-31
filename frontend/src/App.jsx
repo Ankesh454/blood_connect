@@ -14,6 +14,8 @@ import DonorTracking from './pages/DonorTracking';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import AdminPortal from './pages/AdminPortal';
 import RoleDashboard from './pages/RoleDashboard';
+import Hospitals from './pages/Hospitals';
+import Notifications from './pages/Notifications';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes = () => {
@@ -27,6 +29,7 @@ const AppRoutes = () => {
         <Routes>
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/camps" element={<DonationCamps />} />
+          <Route path="/hospitals" element={<Hospitals />} />
           <Route path="/emergency-sos" element={<EmergencySOS />} />
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -38,6 +41,7 @@ const AppRoutes = () => {
           <Route path="/donor-tracking" element={<DonorTracking />} />
           <Route path="/dashboard" element={<ProtectedRoute><RoleDashboard /></ProtectedRoute>} />
           <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>

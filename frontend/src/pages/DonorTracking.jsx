@@ -63,7 +63,7 @@ const DonorTracking = () => {
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
             <Truck className="h-8 w-8 text-red-600" /> Donor Dispatch & Live Tracking
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Coordinate active donor arrivals and fulfillment milestones.</p>
+          <p className="text-sm text-gray-500 mt-1">Track your donor responses or coordinate hospital arrivals and fulfillment milestones.</p>
         </div>
 
         {loading ? (
@@ -108,7 +108,7 @@ const DonorTracking = () => {
 
                   {/* Status Action Controls */}
                   <div className="pt-4 border-t border-gray-100 flex flex-wrap gap-2">
-                    {userRole === 'donor' && item.status === 'Accepted' && (
+                    {userRole === 'user' && item.status === 'Accepted' && (
                       <button
                         onClick={() => handleStatusChange(item._id, 'On the Way')}
                         className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow"

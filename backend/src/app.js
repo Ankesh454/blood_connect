@@ -44,9 +44,9 @@ const corsOptions = {
 // Handle CORS before parsing requests or routing, including browser preflights.
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
-app.use(express.json());
 app.use(helmet());
-app.use(morgan('dev'));
+app.use(express.json({ limit: '32kb' }));
+app.use(morgan('tiny', { skip: (req) => req.path.startsWith('/api/auth') }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -59,6 +59,8 @@ app.use('/api/camps', require('./routes/campRoutes'));
 app.use('/api/issuance', require('./routes/issuanceRoutes'));
 app.use('/api/commitments', require('./routes/commitmentRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/hospitals', require('./routes/hospitalRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Base route
 app.get('/', (req, res) => {

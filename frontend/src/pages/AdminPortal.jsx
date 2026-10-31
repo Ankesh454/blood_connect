@@ -9,6 +9,7 @@ import API from '../services/api';
 const sections = [
   { key: 'overview', label: 'Overview', icon: LayoutDashboard },
   { key: 'users', label: 'People', icon: Users },
+  { key: 'hospitals', label: 'Hospitals', icon: Building2 },
   { key: 'inventory', label: 'Blood inventory', icon: Droplets },
   { key: 'requests', label: 'Blood requests', icon: HeartPulse },
   { key: 'sos', label: 'Emergency alerts', icon: AlertTriangle },
@@ -18,7 +19,7 @@ const sections = [
 ];
 
 const bloodGroups = ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'];
-const emptyRecords = { users: [], inventory: [], requests: [], camps: [], sos: [], commitments: [], issuances: [] };
+const emptyRecords = { users: [], hospitals: [], inventory: [], requests: [], camps: [], sos: [], commitments: [], issuances: [] };
 
 const displayDate = (value) => value ? new Date(value).toLocaleDateString() : '—';
 const shortId = (value) => value ? String(value).slice(-7).toUpperCase() : '—';
@@ -61,6 +62,8 @@ const AdminPortal = () => {
   const [notice, setNotice] = useState('');
   const [search, setSearch] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hospitalForm, setHospitalForm] = useState({ name: '', address: '', city: '', phone: '', email: '' });
+  const [showHospitalForm, setShowHospitalForm] = useState(false);
 
   const logout = useCallback(() => {
     localStorage.removeItem('adminInfo');
@@ -150,6 +153,28 @@ const AdminPortal = () => {
       await refresh();
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Could not delete this record.');
+    }
+  };
+
+  const createHospital = async (event) => {
+    event.preventDefault();
+    try {
+      await API.post('/hospitals', hospitalForm);
+      setHospitalForm({ name: '', address: '', city: '', phone: '', email: '' });
+      setShowHospitalForm(false);
+      setNotice('Hospital listing created.');
+      await refresh();
+    } catch (requestError) { setError(requestError.response?.data?.message || 'Could not create hospital listing.'); }
+  };
+
+  const decideHospitalApplication = async (id, decision) => {
+    const action = decision === 'approve' ? 'approve-hospital' : 'reject-hospital';
+    try {
+      await API.post(`/admin/users/${id}/${action}`);
+      setNotice(decision === 'approve' ? 'Hospital account approved.' : 'Hospital application rejected.');
+      await refresh();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Could not update hospital application.');
     }
   };
 
@@ -275,7 +300,8 @@ const AdminPortal = () => {
           ) : (
             <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5 sm:px-6"><div><h2 className="font-extrabold tracking-tight">{currentSection.label}</h2><p className="mt-1 text-xs text-slate-400">{visibleRows.length} record{visibleRows.length === 1 ? '' : 's'} shown · up to 200 most recent</p></div><label className="flex h-10 w-full items-center gap-2 rounded-xl border border-slate-200 px-3 text-slate-400 sm:w-64"><Search className="h-4 w-4" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search records…" className="min-w-0 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400" /></label></div>
-              {loading && records[section]?.length === 0 ? <div className="p-14 text-center text-sm font-semibold text-slate-400">Loading records…</div> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><TableHead section={section} /><tbody className="divide-y divide-slate-100">{visibleRows.map((row) => <AdminRow key={row._id} row={row} section={section} onUpdate={updateRecord} onDelete={deleteRecord} />)}{visibleRows.length === 0 && <tr><td colSpan="8" className="px-6 py-14 text-center text-sm text-slate-400">{search ? 'No records match your search.' : 'No records in this section yet.'}</td></tr>}</tbody></table></div>}
+              {section === 'hospitals' && <div className="border-b border-slate-100 p-5"><button onClick={() => setShowHospitalForm((open) => !open)} className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white">{showHospitalForm ? 'Close form' : 'Add hospital listing'}</button>{showHospitalForm && <form onSubmit={createHospital} className="mt-4 grid gap-3 sm:grid-cols-2"><input aria-label="Hospital name" required placeholder="Hospital name" value={hospitalForm.name} onChange={(e) => setHospitalForm({ ...hospitalForm, name: e.target.value })} className="rounded-lg border p-3"/><input aria-label="Address" required placeholder="Address" value={hospitalForm.address} onChange={(e) => setHospitalForm({ ...hospitalForm, address: e.target.value })} className="rounded-lg border p-3"/><input aria-label="City" required placeholder="City" value={hospitalForm.city} onChange={(e) => setHospitalForm({ ...hospitalForm, city: e.target.value })} className="rounded-lg border p-3"/><input aria-label="Phone" placeholder="Contact phone" value={hospitalForm.phone} onChange={(e) => setHospitalForm({ ...hospitalForm, phone: e.target.value })} className="rounded-lg border p-3"/><input aria-label="Email" type="email" placeholder="Contact email" value={hospitalForm.email} onChange={(e) => setHospitalForm({ ...hospitalForm, email: e.target.value })} className="rounded-lg border p-3"/><button className="rounded-lg bg-slate-900 px-4 py-3 font-bold text-white">Create listing</button></form>}</div>}
+              {loading && records[section]?.length === 0 ? <div className="p-14 text-center text-sm font-semibold text-slate-400">Loading records…</div> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><TableHead section={section} /><tbody className="divide-y divide-slate-100">{visibleRows.map((row) => <AdminRow key={row._id} row={row} section={section} onUpdate={updateRecord} onDelete={deleteRecord} onApprove={(id) => decideHospitalApplication(id, 'approve')} onReject={(id) => decideHospitalApplication(id, 'reject')} />)}{visibleRows.length === 0 && <tr><td colSpan="8" className="px-6 py-14 text-center text-sm text-slate-400">{search ? 'No records match your search.' : 'No records in this section yet.'}</td></tr>}</tbody></table></div>}
             </section>
           )}
           <footer className="flex flex-wrap items-center justify-between gap-2 pb-4 text-[11px] font-medium text-slate-400"><span>Life Connect Admin Console</span><span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Protected administrator session</span></footer>
@@ -292,7 +318,8 @@ function StatusPill({ value }) {
 
 function TableHead({ section }) {
   const cols = {
-    users: ['Person', 'Email', 'Role', 'City', 'Phone', 'Joined', 'Actions'],
+    users: ['Person', 'Email', 'Account type', 'Application', 'City', 'Phone', 'Actions'],
+    hospitals: ['Hospital', 'Address', 'City', 'Phone', 'Email', 'Verified', 'Actions'],
     inventory: ['Blood group', 'Hospital', 'City', 'Units', 'Expires', 'Batch', 'Actions'],
     requests: ['Patient', 'Blood group', 'Location', 'Units', 'Urgency', 'Status', 'Actions'],
     camps: ['Camp', 'Hospital', 'Venue', 'City', 'Date', 'Contact', 'Actions'],
@@ -303,13 +330,14 @@ function TableHead({ section }) {
   return <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-400"><tr>{cols.map((col) => <th key={col} className="whitespace-nowrap px-5 py-3.5">{col}</th>)}</tr></thead>;
 }
 
-function AdminRow({ row, section, onUpdate, onDelete }) {
+function AdminRow({ row, section, onUpdate, onDelete, onApprove, onReject }) {
   const cell = 'whitespace-nowrap px-5 py-3.5 text-slate-600';
   const primary = 'font-bold text-slate-900';
   const selectClass = 'rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-rose-300';
   const removeButton = (collection) => <button title="Delete record" onClick={() => onDelete(collection, row._id)} className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"><Trash2 className="h-4 w-4" /></button>;
 
-  if (section === 'users') return <tr className="hover:bg-slate-50/70"><td className={`${cell} ${primary}`}>{row.name}</td><td className={cell}>{row.email}</td><td className={cell}><select aria-label={`Role for ${row.name}`} disabled={row.role === 'admin'} className={selectClass} value={row.role} onChange={(event) => onUpdate('users', row._id, { role: event.target.value })}><option value="donor">Donor</option><option value="recipient">Recipient</option><option value="hospital">Hospital</option></select></td><td className={cell}>{row.city || '—'}</td><td className={cell}>{row.phone || '—'}</td><td className={cell}>{displayDate(row.createdAt)}</td><td className={cell}>{removeButton('users')}</td></tr>;
+  if (section === 'users') return <tr className="hover:bg-slate-50/70"><td className={`${cell} ${primary}`}>{row.name}<p className="mt-0.5 text-[10px] font-medium text-slate-400">{displayDate(row.createdAt)}</p></td><td className={cell}>{row.email}</td><td className={cell}>{row.role === 'hospital' ? 'Hospital' : row.role === 'admin' ? 'Admin' : 'User'}</td><td className={cell}>{row.approvalStatus === 'pending' && row.requestedRole === 'hospital' ? <div className="flex gap-2"><button onClick={() => onApprove(row._id)} className="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-700">Approve</button><button onClick={() => onReject(row._id)} className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-bold text-rose-700">Reject</button></div> : row.approvalStatus === 'rejected' ? <span className="text-xs text-rose-600">Rejected</span> : row.role === 'hospital' ? <span className="text-xs text-emerald-700">Approved</span> : '—'}</td><td className={cell}>{row.city || '—'}</td><td className={cell}>{row.phone || '—'}</td><td className={cell}>{row.role !== 'admin' && removeButton('users')}</td></tr>;
+  if (section === 'hospitals') return <tr className="hover:bg-slate-50/70"><td className={`${cell} ${primary}`}>{row.name}</td><td className={cell}>{row.address}</td><td className={cell}>{row.city}</td><td className={cell}>{row.phone || '—'}</td><td className={cell}>{row.email || '—'}</td><td className={cell}><button onClick={() => onUpdate('hospitals', row._id, { verified: !row.verified })} className={`rounded-lg px-3 py-2 text-xs font-bold ${row.verified ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{row.verified ? 'Verified' : 'Verify listing'}</button></td><td className={cell}>{removeButton('hospitals')}</td></tr>;
   if (section === 'inventory') return <tr className="hover:bg-slate-50/70"><td className={cell}><span className="rounded-lg bg-rose-50 px-2 py-1 text-xs font-black text-rose-700">{row.bloodGroup}</span></td><td className={`${cell} ${primary}`}>{row.hospitalName}</td><td className={cell}>{row.city}</td><td className={cell}><div className="flex items-center gap-2"><button aria-label="Remove one unit" onClick={() => onUpdate('inventory', row._id, { units: Math.max(0, Number(row.units) - 1) })} className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 font-bold hover:border-rose-300 hover:text-rose-600">−</button><span className="min-w-6 text-center font-extrabold text-slate-900">{row.units}</span><button aria-label="Add one unit" onClick={() => onUpdate('inventory', row._id, { units: Number(row.units) + 1 })} className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 font-bold hover:border-emerald-300 hover:text-emerald-600"><Plus className="h-3.5 w-3.5" /></button></div></td><td className={cell}>{displayDate(row.expiryDate)}</td><td className={cell}>{row.batchNumber || '—'}</td><td className={cell}>{removeButton('inventory')}</td></tr>;
   if (section === 'requests') return <tr className="hover:bg-slate-50/70"><td className={`${cell} ${primary}`}>{row.patientName}<p className="mt-0.5 text-[10px] font-medium text-slate-400">#{shortId(row._id)}</p></td><td className={cell}><span className="rounded-lg bg-rose-50 px-2 py-1 text-xs font-black text-rose-700">{row.bloodGroup}</span></td><td className={cell}>{row.city}</td><td className={cell}>{row.unitsNeeded}</td><td className={cell}><StatusPill value={row.urgencyLevel} /></td><td className={cell}><StatusPill value={row.status} /></td><td className={cell}>{row.status === 'Pending' ? <button onClick={() => onUpdate('requests', row._id, { status: 'Fulfilled' })} className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100">Fulfill</button> : '—'}</td></tr>;
   if (section === 'camps') return <tr className="hover:bg-slate-50/70"><td className={`${cell} ${primary}`}>{row.title}</td><td className={cell}>{row.hospitalName}</td><td className={cell}>{row.venue}</td><td className={cell}>{row.city}</td><td className={cell}>{displayDate(row.date)}</td><td className={cell}>{row.contactPhone}</td><td className={cell}>{removeButton('camps')}</td></tr>;

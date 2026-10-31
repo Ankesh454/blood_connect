@@ -107,7 +107,7 @@ const DonationCamps = () => {
             <p className="text-sm text-gray-500 mt-1">Upcoming community blood drive events and collection drives.</p>
           </div>
 
-          {userRole === 'hospital' && (
+          {['user', 'hospital'].includes(userRole) && (
             <button
               onClick={() => setShowModal(true)}
               className="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-red-600/30 transition flex items-center gap-2"
@@ -127,7 +127,7 @@ const DonationCamps = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {camps.map((camp) => {
-              const isOwner = userRole === 'hospital' && camp.hospital === userId;
+              const isOwner = ['user', 'hospital'].includes(userRole) && String(camp.hospital) === String(userId);
 
               return (
                 <div key={camp._id} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 flex flex-col justify-between">
